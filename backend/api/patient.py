@@ -1,12 +1,18 @@
 from fastapi import APIRouter
 from backend.models.patient import PatientProfile
+from backend.agents.clinical_reasoning import ClinicalReasoningAgent
 
 router = APIRouter()
 
+agent = ClinicalReasoningAgent()
+
 
 @router.post("/patient")
-def create_patient(patient: PatientProfile):
+def analyze_patient(patient: PatientProfile):
+
+    result = agent.analyze(patient)
+
     return {
-        "message": "Patient profile received successfully!",
-        "patient": patient
+        "patient": patient,
+        "clinical_reasoning": result
     }
