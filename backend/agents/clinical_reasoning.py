@@ -1,33 +1,39 @@
 from backend.services.llm_service import get_llm
-
+from backend.utils.json_parser import parse_json
 
 class ClinicalReasoningAgent:
 
     def __init__(self):
         self.llm = get_llm()
 
-    def analyze(self, patient):
+    def run(self, state):
+
+        patient = state["patient"]
 
         prompt = f"""
 You are an experienced physician.
 
-Patient Details:
+Patient Details
 
-Age: {patient.age}
-Gender: {patient.gender}
-Symptoms: {", ".join(patient.symptoms)}
-Duration: {patient.duration}
-Medications: {", ".join(patient.medications)}
-Allergies: {", ".join(patient.allergies)}
+Age: {patient['age']}
+Gender: {patient['gender']}
+Symptoms: {', '.join(patient['symptoms'])}
+Duration: {patient['duration']}
+Medications: {', '.join(patient['medications'])}
+Allergies: {', '.join(patient['allergies'])}
 
-Return ONLY:
+Return ONLY valid JSON.
 
-1. Possible Conditions
-2. Confidence (0-100)
-3. Reasoning
-4. Suggested Next Step
+{{
+"possible_conditions": [],
+"confidence": 0,
+"reasoning":"",
+"next_step":""
+}}
 """
 
         response = self.llm.invoke(prompt)
 
-        return response.content
+        state["clinical_reasoning"] = parse_json(response.content)
+
+        return state

@@ -1,23 +1,29 @@
 from fastapi import APIRouter
+
 from backend.models.patient import PatientProfile
 from backend.agents.clinical_reasoning import ClinicalReasoningAgent
 from backend.agents.evidence_agent import EvidenceAgent
 
 router = APIRouter()
 
-clinical_agent = ClinicalReasoningAgent()
-evidence_agent = EvidenceAgent()
+clinical = ClinicalReasoningAgent()
+evidence = EvidenceAgent()
+
+
+from backend.core.workflow import graph
 
 
 @router.post("/patient")
-def analyze_patient(patient: PatientProfile):
+def analyze(patient: PatientProfile):
 
-    clinical_result = clinical_agent.analyze(patient)
-
-    evidence_result = evidence_agent.verify(clinical_result)
-
-    return {
-        "patient": patient,
-        "clinical_reasoning": clinical_result,
-        "evidence_verification": evidence_result
+    state = {
+        "patient": patient.model_dump(),
+        "clinical_reasoning": {},
+        "evidence": {},
+        "medication": {},
+        "consensus": {}
     }
+
+    result = graph.invoke(state)
+
+    return result

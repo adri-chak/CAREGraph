@@ -1,35 +1,30 @@
 from backend.services.llm_service import get_llm
-
+from backend.utils.json_parser import parse_json
 
 class EvidenceAgent:
 
     def __init__(self):
         self.llm = get_llm()
 
-    def verify(self, clinical_reasoning):
+    def run(self, state):
 
         prompt = f"""
-You are an Evidence Verification Agent.
+Verify this clinical reasoning.
 
-Your task is NOT to diagnose.
+{state["clinical_reasoning"]}
 
-Your task is to verify whether the following reasoning is medically reasonable.
+Return ONLY valid JSON.
 
-Clinical Reasoning:
-
-{clinical_reasoning}
-
-Return ONLY:
-
-1. Evidence Strength (Weak / Moderate / Strong)
-
-2. Missing Information
-
-3. Recommended Diagnostic Tests
-
-4. Possible Red Flags
+{{
+"evidence_strength":"",
+"missing_information":[],
+"recommended_tests":[],
+"red_flags":[]
+}}
 """
 
         response = self.llm.invoke(prompt)
 
-        return response.content
+        state["evidence"] = parse_json(response.content)
+
+        return state
